@@ -1,0 +1,15 @@
+{
+  "name": "string-looper",
+  "main": "./lib/string-looper",
+  "version": "0.0.0",
+  "description": "Change word case, number value and loop between keywords with the arrow of your keyboard.",
+  "activationEvents": [
+    "string-looper:toggle"
+  ],
+  "repository": "https://github.com/leny/atom-string-looper",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.138.0"
+  },
+  "dependencies": {}
+}
