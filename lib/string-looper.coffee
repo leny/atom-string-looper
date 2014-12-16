@@ -46,8 +46,8 @@ module.exports =
             "string-looper:loop-down": => @loop "down"
 
     loop: ( sDirection = "up" ) ->
-        # get current word
-        for oCursor in ( oEditor = atom.workspace.getActiveTextEditor() ).cursors
+        aCursorPositions = ( oEditor = atom.workspace.getActiveTextEditor() ).getCursorBufferPositions()
+        for oCursor in oEditor.cursors
             oCursorRange = oCursor.getCurrentWordBufferRange
                 wordRegex: atom.config.get( "string-looper.wordRegex" ) or oCursor.wordRegExp()
             sWord = oEditor.getTextInRange oCursorRange
@@ -61,4 +61,4 @@ module.exports =
 
             oEditor.setTextInBufferRange oCursorRange, sNewWord
 
-        # TODO restore cursor (will not work for multiple cursors)
+        oEditor.setCursorBufferPosition aCursorPositions[ aCursorPositions.length - 1 ]
