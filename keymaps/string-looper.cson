@@ -7,5 +7,6 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
-'.workspace':
-  'ctrl-alt-o': 'string-looper:toggle'
+'.editor:not(.mini)':
+  'alt-up': 'string-looper:loop-up'
+  'alt-down': 'string-looper:loop-down'
