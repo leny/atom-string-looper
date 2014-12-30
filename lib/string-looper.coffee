@@ -15,6 +15,9 @@ _aEnums = [
     [ "TODO", "DONE", "FIXME" ]
 ]
 
+_iCurrentLoop = 0
+_sCurrentWord = null
+
 aEnums = []
 
 _mergeEnums = ( aEnumsToMerge ) ->
@@ -48,17 +51,31 @@ module.exports =
     loop: ( sDirection = "up" ) ->
         aCursorPositions = ( oEditor = atom.workspace.getActiveTextEditor() ).getCursorBufferPositions()
         for oCursor in oEditor.cursors
-            oCursorRange = oCursor.getCurrentWordBufferRange
+            oCursorWordRange = oCursor.getCurrentWordBufferRange
                 wordRegex: atom.config.get( "string-looper.wordRegex" ) or oCursor.wordRegExp()
-            sWord = oEditor.getTextInRange oCursorRange
+            sWord = oEditor.getTextInRange oCursorWordRange
 
-            if no # TODO it's a number
+            if no # it's a number (TODO)
                 console.log "it's a number!"
-            else if aEnum = _findAnEnum sWord
+            else if aEnum = _findAnEnum sWord # it's an enum-listed word
                 sNewWord = aEnum[ aEnum.indexOf( sWord ) + ( if sDirection is "up" then 1 else -1 ) ] ? aEnum[ if sDirection is "up" then 0 else ( aEnum.length - 1 ) ]
-            else # cycle (lowercase/uppercase)
-                sNewWord = if sWord.toLowerCase() is sWord then sWord.toUpperCase() else sWord.toLowerCase()
+            else # cycle (lowercase/uppercase/camelCase at cursor position)
+                if _sCurrentWord isnt sWord.toLowerCase()
+                    _iCurrentLoop = switch
+                        when sWord.toLowerCase() is sWord then 1
+                        when sWord.toUpperCase() is sWord then 2
+                        else 0
+                    _sCurrentWord = sWord
+                switch _iCurrentLoop
+                    when 0 # lowerCase
+                        sNewWord = sWord.toLowerCase()
+                    when 1 # upperCase
+                        sNewWord = sWord.toUpperCase()
+                    when 2 # camelCase at cursor position
+                        iCursorPosition = oCursor.getBufferPosition().column - oCursorWordRange.start.column
+                        sNewWord = sWord.slice( 0, iCursorPosition ).toLowerCase() + sWord.slice( iCursorPosition, iCursorPosition + 1 ).toUpperCase() + sWord.slice( iCursorPosition + 1 ).toLowerCase()
+                ++_iCurrentLoop > 2 and ( _iCurrentLoop = 0 )
 
-            oEditor.setTextInBufferRange oCursorRange, sNewWord
+            oEditor.setTextInBufferRange oCursorWordRange, sNewWord
 
         oEditor.setCursorBufferPosition aCursorPositions[ aCursorPositions.length - 1 ]
