@@ -17,6 +17,7 @@ _aEnums = [
 
 _iCurrentLoop = 0
 _sCurrentWord = null
+_rNumberExtractor = /^(-*\d+(\.\d+)?)([a-zA-Z%]+)?$/
 
 aEnums = []
 
@@ -55,8 +56,19 @@ module.exports =
                 wordRegex: atom.config.get( "string-looper.wordRegex" ) or oCursor.wordRegExp()
             sWord = oCursor.editor.getTextInRange oCursorWordRange
 
-            if no # it's a number (TODO)
-                console.log "it's a number!"
+            if aMatching = _rNumberExtractor.exec sWord # it's a number (TODO)
+                console.log "number:", sWord, aMatching
+                _oPrevCharRange = oCursorWordRange.copy()
+                _oPrevCharRange.end.column = _oPrevCharRange.start.column
+                _oPrevCharRange.start.column -= 1
+                _oNextCharRange = oCursorWordRange.copy()
+                _oNextCharRange.start.column = _oNextCharRange.end.column
+                _oNextCharRange.end.column += 1
+                if oCursor.editor.getTextInRange( _oPrevCharRange ) is "."
+                    console.log "extend to left!" # TODO (on the same line only)
+                else if oCursor.editor.getTextInRange( _oNextCharRange ) is "."
+                    console.log "extend to right!" # TODO (on the same line only)
+                sNewWord = sWord
             else if aEnum = _findAnEnum sWord # it's an enum-listed word
                 sNewWord = aEnum[ aEnum.indexOf( sWord ) + ( if sDirection is "up" then 1 else -1 ) ] ? aEnum[ if sDirection is "up" then 0 else ( aEnum.length - 1 ) ]
             else # cycle (lowercase/uppercase/camelCase at cursor position)
