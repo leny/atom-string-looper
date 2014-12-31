@@ -53,7 +53,7 @@ module.exports =
         for oCursor in oEditor.cursors
             oCursorWordRange = oCursor.getCurrentWordBufferRange
                 wordRegex: atom.config.get( "string-looper.wordRegex" ) or oCursor.wordRegExp()
-            sWord = oEditor.getTextInRange oCursorWordRange
+            sWord = oCursor.editor.getTextInRange oCursorWordRange
 
             if no # it's a number (TODO)
                 console.log "it's a number!"
