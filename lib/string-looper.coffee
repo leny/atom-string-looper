@@ -30,6 +30,10 @@ _findAnEnum = ( sWord ) ->
         return aEnum if aEnum.indexOf( sWord ) > -1
     no
 
+_getPrecision = ( iNumber ) ->
+    d = ( s = "#{ iNumber }" ).indexOf( "." ) + 1
+    if not d then 0 else s.length - d
+
 module.exports =
     config:
         wordRegex:
@@ -52,14 +56,17 @@ module.exports =
             "string-looper:loop-up-at-cursor": => @loop "up", yes
             "string-looper:loop-down-at-cursor": => @loop "down", yes
 
-    loop: ( sDirection = "up" ) ->
+    loop: ( sDirection = "up", bAtCursorPosition = no ) ->
         aCursorPositions = ( oEditor = atom.workspace.getActiveTextEditor() ).getCursorBufferPositions()
         for oCursor in oEditor.cursors
             oCursorWordRange = oCursor.getCurrentWordBufferRange
                 wordRegex: atom.config.get( "string-looper.wordRegex" ) or oCursor.wordRegExp()
             sWord = oCursor.editor.getTextInRange oCursorWordRange
 
-            if aMatching = _rNumberExtractor.test sWord # it's a number
+            # it's a number
+            # TODO this part could have a decent refactor
+            if aMatching = _rNumberExtractor.test sWord
+                iIncrementValue = 1
                 sLine = oCursor.editor.lineTextForBufferRow oCursor.getBufferPosition().row
                 # extend word till spaces
                     # left
@@ -67,19 +74,37 @@ module.exports =
                 ++i while _rNumberMatcher.test ( sChar = sLine.charAt oCursorWordRange.start.column - ( i + 1 ) ).trim()
                 oCursorWordRange.start.column -= i
                     # right
-                i = 0
-                ++i while _rNumberMatcher.test ( sChar = sLine.charAt oCursorWordRange.start.column + i ).trim()
-                oCursorWordRange.end.column = oCursorWordRange.start.column + i
-                sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
-                # i word ends with a point, exclude it.
+                if bAtCursorPosition
+                    sWordBeforeShifting = oCursor.editor.getTextInRange oCursorWordRange
+                    oCursorWordRange.end.column = oCursor.getBufferPosition().column
+                    sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
+                    if sExtendedWord.charAt( sExtendedWord.length - 1 ) is "-"
+                        oCursorWordRange.end.column += 1
+                        sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
+                    iPrecision = _getPrecision( sExtendedWord )
+                else
+                    i = 0
+                    ++i while _rNumberMatcher.test ( sChar = sLine.charAt oCursorWordRange.start.column + i ).trim()
+                    oCursorWordRange.end.column = oCursorWordRange.start.column + i
+                    sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
+                # if word ends with a point, exclude it.
                 if sExtendedWord.charAt( sExtendedWord.length - 1 ) is "."
                     oCursorWordRange.end.column -= 1
                     sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
                 iNumber = +sExtendedWord
-                sNewWord = ( if sDirection is "up" then iNumber + 1 else iNumber - 1 ).toString()
-            else if aEnum = _findAnEnum sWord # it's an enum-listed word
+                if iPrecision
+                    iNumber *= Math.pow 10, iPrecision
+                    iNumber = Math.trunc iNumber
+                iNumber = if sDirection is "up" then iNumber + iIncrementValue else iNumber - iIncrementValue
+                iNumber /= Math.pow( 10, iPrecision ) if iPrecision
+                sNewWord = iNumber.toString()
+
+            # it's an enum-listed word
+            else if aEnum = _findAnEnum sWord
                 sNewWord = aEnum[ aEnum.indexOf( sWord ) + ( if sDirection is "up" then 1 else -1 ) ] ? aEnum[ if sDirection is "up" then 0 else ( aEnum.length - 1 ) ]
-            else # cycle (lowercase/uppercase/camelCase at cursor position)
+
+            # cycle (lowercase/uppercase/camelCase at cursor position)
+            else
                 if _sCurrentWord isnt sWord.toLowerCase()
                     _iCurrentLoop = switch
                         when sWord.toLowerCase() is sWord then 1
