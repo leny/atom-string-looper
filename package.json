@@ -5,7 +5,9 @@
   "description": "Change word case, number value and loop between keywords with the arrows of your keyboard.",
   "activationEvents": [
     "string-looper:loop-up",
-    "string-looper:loop-down"
+    "string-looper:loop-down",
+    "string-looper:loop-up-at-cursor",
+    "string-looper:loop-down-at-cursor"
   ],
   "repository": "https://github.com/leny/atom-string-looper",
   "license": "MIT",

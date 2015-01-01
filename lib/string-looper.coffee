@@ -49,6 +49,8 @@ module.exports =
         atom.commands.add ".editor:not(.mini)",
             "string-looper:loop-up": => @loop()
             "string-looper:loop-down": => @loop "down"
+            "string-looper:loop-up-at-cursor": => @loop "up", yes
+            "string-looper:loop-down-at-cursor": => @loop "down", yes
 
     loop: ( sDirection = "up" ) ->
         aCursorPositions = ( oEditor = atom.workspace.getActiveTextEditor() ).getCursorBufferPositions()
