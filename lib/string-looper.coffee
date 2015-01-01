@@ -17,7 +17,7 @@ _aEnums = [
 
 _iCurrentLoop = 0
 _sCurrentWord = null
-_rNumberExtractor = /^\d*\.*\d*[a-zA-Z%]*$/
+_rNumberExtractor = /^-?(\d+|\d+\.|\d+\.+\d+|\.\d+){1}[a-zA-Z%]*$/
 _rNumberMatcher = /[0-9\.-]/
 
 aEnums = []
