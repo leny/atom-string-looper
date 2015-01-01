@@ -17,7 +17,8 @@ _aEnums = [
 
 _iCurrentLoop = 0
 _sCurrentWord = null
-_rNumberExtractor = /^(-*\d+(\.\d+)?)([a-zA-Z%]+)?$/
+_rNumberExtractor = /^\d*\.*\d*[a-zA-Z%]*$/
+_rNumberMatcher = /[0-9\.-]/
 
 aEnums = []
 
@@ -56,19 +57,24 @@ module.exports =
                 wordRegex: atom.config.get( "string-looper.wordRegex" ) or oCursor.wordRegExp()
             sWord = oCursor.editor.getTextInRange oCursorWordRange
 
-            if aMatching = _rNumberExtractor.exec sWord # it's a number (TODO)
-                console.log "number:", sWord, aMatching
-                _oPrevCharRange = oCursorWordRange.copy()
-                _oPrevCharRange.end.column = _oPrevCharRange.start.column
-                _oPrevCharRange.start.column -= 1
-                _oNextCharRange = oCursorWordRange.copy()
-                _oNextCharRange.start.column = _oNextCharRange.end.column
-                _oNextCharRange.end.column += 1
-                if oCursor.editor.getTextInRange( _oPrevCharRange ) is "."
-                    console.log "extend to left!" # TODO (on the same line only)
-                else if oCursor.editor.getTextInRange( _oNextCharRange ) is "."
-                    console.log "extend to right!" # TODO (on the same line only)
-                sNewWord = sWord
+            if aMatching = _rNumberExtractor.test sWord # it's a number
+                sLine = oCursor.editor.lineTextForBufferRow oCursor.getBufferPosition().row
+                # extend word till spaces
+                    # left
+                i = 0
+                ++i while _rNumberMatcher.test ( sChar = sLine.charAt oCursorWordRange.start.column - ( i + 1 ) ).trim()
+                oCursorWordRange.start.column -= i
+                    # right
+                i = 0
+                ++i while _rNumberMatcher.test ( sChar = sLine.charAt oCursorWordRange.start.column + i ).trim()
+                oCursorWordRange.end.column = oCursorWordRange.start.column + i
+                sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
+                # i word ends with a point, exclude it.
+                if sExtendedWord.charAt( sExtendedWord.length - 1 ) is "."
+                    oCursorWordRange.end.column -= 1
+                    sExtendedWord = oCursor.editor.getTextInRange oCursorWordRange
+                iNumber = +sExtendedWord
+                sNewWord = ( if sDirection is "up" then iNumber + 1 else iNumber - 1 ).toString()
             else if aEnum = _findAnEnum sWord # it's an enum-listed word
                 sNewWord = aEnum[ aEnum.indexOf( sWord ) + ( if sDirection is "up" then 1 else -1 ) ] ? aEnum[ if sDirection is "up" then 0 else ( aEnum.length - 1 ) ]
             else # cycle (lowercase/uppercase/camelCase at cursor position)
