@@ -1,7 +1,7 @@
 {
   "name": "string-looper",
   "main": "./lib/string-looper",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Change word case, number value and loop between keywords with the arrows of your keyboard.",
   "activationEvents": [
     "string-looper:loop-up",
