@@ -7,13 +7,13 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
-'.platform-linux .editor:not(.mini), .platform-win32 .editor:not(.mini)':
+'.platform-linux atom-text-editor:not(.mini), .platform-win32 atom-text-editor:not(.mini)':
   'alt-up': 'string-looper:loop-up'
   'alt-down': 'string-looper:loop-down'
   'cmd-alt-up': 'string-looper:loop-up-at-cursor'
   'cmd-alt-down': 'string-looper:loop-down-at-cursor'
 
-'.platform-darwin .editor:not(.mini)':
+'.platform-darwin atom-text-editor:not(.mini)':
   'alt-up': 'string-looper:loop-up'
   'alt-down': 'string-looper:loop-down'
   'cmd-alt-up': 'string-looper:loop-up-at-cursor'
