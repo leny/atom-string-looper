@@ -50,7 +50,7 @@ module.exports =
     activate: ->
         _mergeEnums atom.config.get "string-looper.enums"
         atom.config.observe "string-looper.enums", _mergeEnums
-        atom.commands.add ".editor:not(.mini)",
+        atom.commands.add "atom-text-editor:not([mini])",
             "string-looper:loop-up": => @loop()
             "string-looper:loop-down": => @loop "down"
             "string-looper:loop-up-at-cursor": => @loop "up", yes
